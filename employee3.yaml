@@ -1,0 +1,542 @@
+swagger: '2.0'
+info:
+  description: Hosted Application for ABC will host the retail solution to ABC and interacts with internal  ecosystem to provide the Sample features.Perform core functions such as Send, Receive, Modify, Refund and Cancel using current RSI/HPNS interface.Consume Pricing API exposed on the cloud infrastructure for price and tax calculations.OAuth 2.0 is the authentication mechanism to provide secure and standard way for ABC to integrate into  applications. The documentation provides interface information on APIs needed to securely transmit data between ABC & connectionpt for use cases such as Retail,  and Webapp
+  version: 1.0.0
+  title: 'Hosted Application for ABC'
+  termsOfService: 'https://www.connectionpt.com/us/en/terms-conditions.html'
+  contact:
+    email: DigitalPartnership@connectionpt.com
+host: 'www.connectionpt.com'
+basePath: '/us/en/home.html'
+tags:
+  -
+    name: Authentication
+    description: 'Generating OAuth2 based access tokens and AWT based initial tokens to enable ABC to connect to connectionpt and invoke Services'
+schemes:
+  - https
+paths:
+  /oauth/accesstoken: 
+    post:
+      tags:
+        - AccessTokenByClientCredentials
+      summary: AccessTokenByClientCredentials
+      description: 'The client application requests an access token with grant_type=client_credentials by sending  credentials in the form of a Basic Authentication header to the authorization server. If the credentials are valid, the authorization server returns an access token to the application. With the access token, the client application is authorized to invoke the API'
+      operationId: accesstokenbyclientcred
+      x-service-url: https://corerrevuatprxy.intranet.net/apiqa/v1/authorizer/oauth/accesstoken
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        -
+          name: grant_type
+          in: formData
+          type: string
+          description: 'The term “grant type” refers to the way an application gets an access token. In this request, the grant_type used is client_credentials'
+          required: true
+        -
+          name: redirect_url
+          in: formData
+          type: string
+          description: 'Tells the authorization server where to redirect the user after the request is authorized'
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        '400':
+          description: 'Bad request'
+        '401':
+          description: 'Authorization failed'
+        '500':
+          description: 'Internal Server Error'
+
+  /oauth/authcode:
+    post:
+      tags:
+        - getAuthCode
+      summary: getAuthCode
+      description: 'The API gets access code to use with grant_type=authorization_code. The step returns authcode in the reply. The client takes the authcode from this step and invokes in the GetAccessTokenByAuthcode step'
+      operationId: authcode
+      x-service-url: https://corerrevuatprxy.intranet.net/apiqa/v1/authorizer/oauth/authcode?response_type=code&client_id=clientId&redirect_uri=redirectUrl
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        -
+          name: response_type
+          in: formData
+          type: string
+          description: 'Value to pass will be "code"'
+          required: true
+        -
+          name: client_id
+          in: formData
+          type: string
+          description: 'Client_id is consumer_key from the product_app. This value will be provided by  to the client'
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        '400':
+          description: 'Bad request'
+        '401':
+          description: 'Authorization failed'
+        '500':
+          description: 'Internal Server Error'
+  /oauth/GenerateAuthCode:
+    post:
+      tags:
+        - GetAccessTokenByAuthcode
+      summary: GetAccessTokenByAuthcode
+      description: 'The API gets Access Token using grant_type=authorization_code'
+      operationId: accesstokenbyauthcode
+      x-service-url: https://corerrevuatprxy.intranet.net/apiqa/v1/authorizer/oauth/accesstoken
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        -
+          name: code
+          in: formData
+          type: string
+          description: 'Four to eight digit authcode obtained from getAuthCode API'
+          required: true
+        -
+          name: grant_type
+          in: formData
+          type: string
+          description: 'The term “grant type” refers to the way an application gets an access token. In this request, the grant_type used is authorization_code'
+          required: true
+        -
+          name: redirect_url
+          in: formData
+          type: string
+          description: 'Tells the authorization server where to redirect the user after the request is authorized'
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        '400':
+          description: 'Bad request'
+        '401':
+          description: 'Authorization failed'
+        '500':
+          description: 'Internal Server Error'
+  /ABChosted/initiate_session_retail:
+    post:
+      tags:
+        - initiate_session_retail
+      summary: initiate_session_retail
+      description: 'This step gets Initial Session token from the Retail  application.  application uses AWT to generate the initial session token. The token will be used by ABC to get authenticated before invoking the Retail APIs'
+      x-service-url: https://corerrevuatprxy.intranet.net/apiqa/v1/hosted/retail/web-service/rest/hostedpos/validatePartnerDetails
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        -
+          in: body
+          name: body
+          description: 'JSON Request sent to the  Application'
+          required: true
+          schema:
+            $ref: '#/definitions/InitSessionRetailRequest'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/InitSessionRetailResponse'
+        '302':
+          description: 'Success with redirect URL'
+        '400':
+          description: 'Bad request'
+        '401':
+          description: 'Authorization failed'
+        '500':
+          description: 'Internal Server Error'
+  /ABChosted/initiate_session_:
+    post:
+      tags:
+        - initiate_session_
+      summary: initiate_session_
+      description: 'This steps gets the Reference Id from the  Presentation Service.  Presentation Service generates the Reference Id as the initial session token. The token will be used by ABC to get authenticated before invoking  API calls'
+      x-service-url: https://corerrevuatprxy.intranet.net/apidev/v1/hosted//api/v1/hosted/moneytransfer/store
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        -
+          in: body
+          name: body
+          description: 'JSON Request sent to the  Application'
+          required: true
+          schema:
+            $ref: '#/definitions/InitSessionRequest'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/InitSessionResponse'
+        '302':
+          description: 'Success with redirect URL'
+        '400':
+          description: 'Bad request'
+        '401':
+          description: 'Authorization failed'
+        '500':
+          description: 'Internal Server Error'
+  /ABChosted/initiate_session_webapp:
+    post:
+      tags:
+        - initiate_session_webapp
+      summary: initiate_session_webapp
+      description: 'This steps gets the Reference Id from the Webapp Presentation Service. Webapp Presentation Service  generates the Reference Id as the initial session token. The token will be used by ABC to get authenticated before invoking Webapp API calls'
+      x-service-url: https://corerrevuatprxy.intranet.net/apidev/v1/hosted/webapp/api/v1/hosted/moneytransfer/store
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        -
+          in: body
+          name: body
+          description: 'JSON Request sent to the Webapp Application'
+          required: true
+          schema:
+            $ref: '#/definitions/InitSessionWebappRequest'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/InitSessionWebappResponse'
+        '302':
+          description: 'Success with redirect URL'
+        '400':
+          description: 'Bad request'
+        '401':
+          description: 'Authorization failed'
+        '500':
+          description: 'Internal Server Error'
+definitions:
+  AuthResponse:
+    type: object
+    required:
+      - access_token
+      - expires_in
+      - scope
+    properties:
+      access_token:
+        type: string
+        example: 'm5WPLXna3w8dV672jMZGcUd4xAWw'
+        format: byte
+        description: 'OAuth2 access token'
+      expires_in:
+        type: string
+        format: date-time
+        example: '3599'
+        description: 'Access token time to live in milliseconds'
+      scope:
+        type: string
+        description: 'Scope for the access token. Not used.'
+    xml:
+      name: AuthResponse
+  InitSessionRetailRequest:
+    type: object
+    required: 
+    - requestType
+    - payload
+    properties:
+      requestType:
+        type: string
+        format: Byte
+        description: 'Request Type. A constant value given below: HOSTED_PAY_REQUEST'
+      payload:
+        "$ref": '#/definitions/RetailRequestPayload'
+  InitSessionRetailResponse:
+    type: object
+    required:
+      - jwt_token
+      - redirect_url
+    properties:
+      jwt_token:
+        type: string
+        example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydsImp0aSI6IjA4ZjBjODQwLTNkZWEtNDNiMC1hZDYyLThjNGEzMjU0OTIwOSIsImlhdCI6MTU2MDUzNDIyNSwiZXhwIjoxNTYwNTM3ODI1fQ.NOncBERPxIr03P36z_ie5gjPqRXTCS4bI6SBxHk71as'
+        format: byte
+        description: 'Request Id to be returned by  API Server'
+  InitSessionRequest:
+    type: object
+    required: 
+    - requestType
+    - payload
+    properties:
+      email:
+        type: string
+        example: 'abc-123asb@yopmail.com'
+        format: string
+        description: 'Email Id'
+      requestType:
+        type: string
+        example: 'abc-123asb@yopmail.com'
+        format: string
+        description: 'Request Type. A constant value given below: HOSTED_PAY_REQUEST'
+      payload:
+        "$ref": '#/definitions/RequestPayload'
+  InitSessionResponse:
+    type: object
+    required:
+      - referenceId
+      - url
+    properties:
+      referenceId:
+        type: string
+        example: 'eeb6ce86ed9b8b8ea3145d108d375020:web-acb2b1b9-6067-48c7-8f93-080e3dd1ec5d'
+        format: byte
+        description: 'Request Id to be returned by  API Server'
+      url:
+        type: string
+        example: 'https://dispatcher-dev11.devconnectionpt.com/bin/hosted/transfer'
+        format: string
+        description: 'URL'  
+  InitSessionWebappRequest:
+    type: object
+    required: 
+    - payload
+    properties:
+      email:
+        type: string
+        example: 'abc-123asb@yopmail.com'
+        format: string
+        description: 'Email Id'
+      requestType:
+        type: string
+        example: 'abc-123asb@yopmail.com'
+        format: string
+        description: 'Request Type. A constant value given below: HOSTED_PAY_REQUEST'
+      payload:
+        "$ref": '#/definitions/WebappRequestPayload'
+  InitSessionWebappResponse:
+    type: object
+    required:
+      - referenceId
+      - url
+    properties:
+      referenceId:
+        type: string
+        example: 'eeb6ce86ed9b8b8ea3145d108d375020:web-acb2b1b9-6067-48c7-8f93-080e3dd1ec5d'
+        format: byte
+        description: 'Request Id to be returned by  API Server'
+      url:
+        type: string
+        example: 'https://dispatcher-dev11.devconnectionpt.com/bin/hosted/transfer'
+        format: string
+        description: 'URL'  
+  RetailRequestPayload:
+    type: object
+    required: 
+    - partner_id
+    - location_id
+    - counter_id
+    - operator_id
+    - invocation_id
+    - return_url
+    - locale
+    - training_mode
+    properties:
+      partner_name: 
+        type: string
+      partner_id: 
+        type: string
+      location_id: 
+        type: string
+      counter_id: 
+        type: string
+      operator_id: 
+        type: string
+      invocation_id: 
+        type: string
+      return_url: 
+        type: string
+      locale: 
+        type: string
+      training_mode: 
+        type: string
+  RequestPayload:
+    type: object
+    required: 
+    - device_id 
+    - location_id 
+    - channel_type 
+    - partner_reference 
+    - partner_id 
+    - locale 
+    properties:
+      device_id: 
+        type: string
+      location_id: 
+        type: string
+      operator_id: 
+        type: string
+      channel_type: 
+        type: string
+      partner_reference: 
+        type: string
+      redirect_url: 
+        type: string
+      application_id: 
+        type: string
+      partner_id: 
+        type: string
+      management_url: 
+        type: string
+      locale: 
+        type: string
+  WebappRequestPayload:
+    type: object
+    properties:
+      sender:
+        type: object
+        properties:  
+          name:
+            type: object
+            required: 
+            - firstName
+            - LastName
+            properties:  
+              firstName: 
+                 type: string
+              lastName: 
+                 type: string
+              middleName: 
+                 type: string 
+          address:
+            type: object
+            required: 
+            - addressLine1
+            - city
+            - countryISOCode
+            - postalCode
+            properties:  
+              addressLine1: 
+                 type: string
+              addressLine2: 
+                 type: string
+              city: 
+                 type: string 
+              state: 
+                 type: string
+              countryISOCode: 
+                 type: string
+              postalCode: 
+                 type: string 
+          email: 
+            type: string 
+            required: 
+            - email
+          paymentInstruments:
+            type: object
+            required: 
+            - name  
+            properties:  
+              creditDebitCards:
+                type: object
+                required: 
+                - cardNumber
+                - binNumber
+                properties:
+                  customerName:
+                    type: object
+                    properties: 
+                      firstName: 
+                        type: string 
+                      lastName: 
+                        type: string 
+                  cardNumber: 
+                      type: string 
+                  binNumber: 
+                      type: string 
+      complianceDetails:
+        type: object
+        required: 
+        - dateOfBirth  
+        properties:
+          dateOfBirth: 
+            type: string 
+          kycVerifiedFlag: 
+            type: string 
+      partnerFields:
+        type: object
+        required: 
+        - customerIdentifier
+        - transactionId
+        properties:
+          customerIdentifier: 
+            type: string 
+          transactionId: 
+            type: string 
+          shopId: 
+            type: string 
+          idTransactionPayment: 
+            type: string 
+          cardTranId: 
+            type: string 
+      riskData:
+        type: object
+        properties:
+          attemptsBeforeSuccessfulLogin: 
+            type: string 
+          botFlag: 
+            type: string 
+          challengeQuestion: 
+            type: string 
+          daysSincelastPasswordreset: 
+            type: string 
+          daysSincelastSuccessfullogin: 
+            type: string 
+          daysSincelastPhonenumberChange: 
+            type: string 
+          dfp: 
+            type: string 
+          ipProxy: 
+            type: string 
+          deviceName: 
+            type: string 
+          deviceType: 
+            type: string 
+          os: 
+            type: string 
+          ipAddress: 
+            type: string 
+          osVersion: 
+            type: string 
+          ipCountryCode: 
+            type: string 
+          ipAreaCode: 
+            type: string 
+          isp: 
+            type: string 
+          ipLatitude: 
+            type: string 
+          ipLongitude: 
+            type: string 
+          ipUsertype: 
+            type: string 
+          accountAge: 
+            type: string 
+          fraudEmail: 
+            type: string 
+          fraudPhone: 
+            type: string 
+          durationOnlineAccess: 
+            type: string 
+externalDocs:
+  description: 'External docs'
+  url: 'https://partners-sandbox.connectionpt.com/content/com/hostedsolution/v2/docs/ABC.html'
